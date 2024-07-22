@@ -41,3 +41,12 @@ class Order(models.Model):
     ]
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
+
+
+class Address(models.Model):
+    street = models.CharField(max_length=64)
+    city = models.CharField(max_length=32)
+    """customer PK. Because in default, django will create an id, and every address will have an id, so django can
+    make it one to many relationship. To avoid this, i'm making customer as primary key. pk don't allow duplicate key"""
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, primary_key=True)
+    # we don't need reverse relationship in customer class for address.
