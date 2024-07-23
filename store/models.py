@@ -22,6 +22,7 @@ class Collection(models.Model):
 
 class Product(models.Model):
     title = models.CharField(max_length=64)
+    slug = models.SlugField()
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.PositiveIntegerField()
@@ -51,6 +52,12 @@ class Customer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        # using indexes for speed up database query
+        indexes = [
+            models.Index(fields=['last_name', 'first_name'])
+        ]
+
 
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
@@ -78,6 +85,7 @@ class OrderItem(models.Model):
 class Address(models.Model):
     street = models.CharField(max_length=64)
     city = models.CharField(max_length=32)
+    zip_code = models.CharField(max_length=8)
     """customer PK. Because in default, django will create an id, and every address will have an id, so django can
     make it one to many relationship. To avoid this, i'm making customer as primary key. pk don't allow duplicate key"""
     customer = models.OneToOneField(Customer, on_delete=models.CASCADE, primary_key=True)
