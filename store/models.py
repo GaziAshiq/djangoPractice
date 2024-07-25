@@ -15,9 +15,11 @@ class Promotion(models.Model):
 
 class Collection(models.Model):
     title = models.CharField(max_length=32)
-    description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    featured_product = models.ForeignKey(
+        'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
 
 
 class Product(models.Model):
@@ -26,8 +28,8 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     # if collection are deleted, I don't want to delete product
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
@@ -49,8 +51,8 @@ class Customer(models.Model):
     phone = models.CharField(max_length=32)
     birth_date = models.DateField(null=True)
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         # using indexes for speed up database query

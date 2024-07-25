@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # ---------------------- #
     'django_browser_reload',
+    'debug_toolbar',
     'core.apps.CoreConfig',
     'store.apps.StoreConfig',
     'tags.apps.TagsConfig'
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 # X_FRAME_OPTIONS = "ALLOW-FROM preview.app.github.dev"
@@ -129,3 +131,9 @@ MEDIA_ROOT = BASE_DIR / "djangoPractice" / "media"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
