@@ -30,7 +30,7 @@ def objects__retrieve_filter(request):
 
     # region retrieve single product...
     product = Product.objects.filter(id=0).first()  # it will return None if not found
-    product = Product.objects.get(id=1)  # we can also use pk=1
+    product = Product.objects.get(id=1)  # we can also use pk=1. return error if not found
     # pk benefit is, if we change the primary key name, it will still work.
     # endregion it's return single object, not a queryset
 
@@ -48,7 +48,7 @@ def objects__retrieve_filter(request):
     # inventory < 10 AND price < 20
     queryset = Product.objects.filter(inventory__lt=10, price__lt=20)  # using multiple kwargs
     queryset = Product.objects.filter(inventory__lt=10).filter(
-        price__lt=20)  # instead of using multiple kwargs, we can use Q objects
+        price__lt=20)  # using multiple filter, it will use AND condition
     # if we want to use or condition, we can use Q objects
     # inventory < 10 OR price < 20
     queryset = Product.objects.filter(Q(inventory__lt=10) | Q(price__lt=20))
@@ -57,21 +57,22 @@ def objects__retrieve_filter(request):
     # endregion
 
     # region Referencing fields using F objects...
-    refer_query = Product.objects.filter(inventory=F('collection__id'))  # inventory is equal to collection id
+    # inventory is equal to collection id
+    refer_query = Product.objects.filter(inventory=F('collection__id')) # it will compare inventory with collection id
     # endregion
 
     # region Order by...
     order_by = Product.objects.order_by('price')  # ascending order
     order_by = Product.objects.order_by('-price')  # descending order
     order_by = Product.objects.order_by('price', '-title')  # price ascending, title descending
-    order_by = Product.objects.order_by('price', '-title').reverse()  # price ascending, title descending and reverse
-    order_by = Product.objects.filter(price__gt=95).order_by('price')  # price greater than 20 and ascending order
+    order_by = Product.objects.order_by('price', '-title').reverse()  # Reverse the order
+    order_by = Product.objects.filter(price__gt=95).order_by('price')  # filter and order by
     # order_by = Product.objects.earliest('price')  # earliest
     # order_by = Product.objects.latest('price')  # latest
     # endregion
 
     # region limiting query set...
-    limit_query = Product.objects.all()  # first 10
+    limit_query = Product.objects.all()[:10]  # first 10
     # limit_query = Product.objects.values('title', 'id') # selecting fields only
     # limit_query = Product.objects.values('title', 'id', 'collection__title')[1]  # now it will use inner join
     # note: if we use values, it will return dictionary, not object
@@ -82,15 +83,16 @@ def objects__retrieve_filter(request):
     # limit_query = OrderItem.objects.values('product_id').distinct() # distinct is used to remove duplicate
     # sort the list by id
     # limit_query = Product.objects.filter(id__in=limit_query).order_by('id')
-    # only vs values: only is used to select fields, values is used to select fields and return dictionary
 
+    # only vs values: only is used to select fields, values is used to select fields and return dictionary
     # limit_query = Product.objects.only('title', 'price')  # only select title and price
     # be careful, if we use only, it will not return id, so we can't use it in filter, end up with many queries
 
     # limit_query = Product.objects.defer('title', 'price')  # defer is opposite of only
     # defer is used to exclude fields, so it will return id, but not title and price
+    # endregion
 
-    # block: select_related
+    # region select_related and prefetch_related...
     # when we use product.objects.all(), it only load product table, not related table (like - collection)
     # so, when we use product.collection.title, it will make another query to get collection title. so, it will make n+1 queries
     # to avoid this, we can use select_related. it will join the tables and return collection title
@@ -99,7 +101,6 @@ def objects__retrieve_filter(request):
     limit_query = Product.objects.select_related(
         'collection__featured_product')  # we can also use nested select_related
 
-    # block: prefetch_related
     # select_related is used for many-to-one relationship
     # prefetch_related is used for many-to-many relationship
     limit_query = Product.objects.prefetch_related(
