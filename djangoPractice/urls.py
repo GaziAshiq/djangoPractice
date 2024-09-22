@@ -10,6 +10,7 @@ from core import views as core_views
 urlpatterns = [
     path("", core_views.index),
     path("hello/", core_views.say_hello),
+    path("objects/", core_views.objects__retrieve_filter),
     path("core/", core_views.about),
     path("admin/", admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),

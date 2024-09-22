@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}
+    Products Data Test
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <!-- First Product Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">First Product</h3>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#firstProductContent" aria-expanded="false" aria-controls="firstProductContent">
+                    Toggle
+                </button>
+            </div>
+            <div class="collapse" id="firstProductContent">
+                <div class="card-body">
+                    <p>{{ single_product.title }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtered Products Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Filtered Products ({{ products.count }})</h2>
+                <button class="btn btn-outline-success" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#filteredProductsContent" aria-expanded="false"
+                        aria-controls="filteredProductsContent">
+                    Toggle
+                </button>
+            </div>
+            <div class="collapse" id="filteredProductsContent">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for product in products %}
+                            <li class="list-group-item">{{ product.title }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q Products Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Q Products ({{ queryset.count }})</h2>
+                <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#qProductsContent" aria-expanded="false" aria-controls="qProductsContent">
+                    Toggle
+                </button>
+            </div>
+            <div class="collapse" id="qProductsContent">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for q in queryset %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ q.title }}
+                                <span class="badge bg-primary rounded-pill">{{ q.price }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- F Products Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">F Products ({{ refer_queryset.count }})</h2>
+                <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#fProductsContent" aria-expanded="false" aria-controls="fProductsContent">
+                    Toggle
+                </button>
+            </div>
+            <div class="collapse" id="fProductsContent">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for q in refer_queryset %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ q.title }}
+                                <span class="badge bg-primary rounded-pill">{{ q.price }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- order-by Products Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Order By Products ({{ order_by.count }})</h2>
+                <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#orderProductsContent" aria-expanded="false"
+                        aria-controls="orderProductsContent">Toggle
+                </button>
+            </div>
+            <div class="collapse" id="orderProductsContent">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if order_by.count > 1 %}
+                            {% for q in order_by %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ q.title }}
+                                    <span class="badge bg-primary rounded-pill">{{ q.price }}</span>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ order_by.title }} <!-- Access the first item in the queryset -->
+                                <span class="badge bg-primary rounded-pill">{{ order_by.price }}</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- limiting query Products Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Limiting Products ({{ limit_query.count }})</h2>
+                <button class="btn btn-outline-info" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#limitProductsContent" aria-expanded="false"
+                        aria-controls="limitProductsContent">
+                    Toggle
+                </button>
+            </div>
+            <div class="collapse show" id="orderProductsContent">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if limit_query.count > 1 %}
+                            {% for q in limit_query %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ q.title }} ---- {{ q.collection.title }}
+                                    <span class="badge bg-primary rounded-pill">{{ q.price }}</span>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ limit_query.title }}<!-- Access the first item in the queryset -->
+                                <span class="badge bg-primary rounded-pill">{{ limit_query.price }}</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ limit_query }}
+{% endblock %}
