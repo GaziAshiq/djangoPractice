@@ -1,8 +1,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.db.models import Q, F
-from django.db.models.aggregates import Count, Max, Min, Avg, Sum
-from store.models import Product, OrderItem
+from django.db.models import Q, F, Value, Func, Count, ExpressionWrapper, DecimalField
+from django.db.models.functions import Concat
+from store.models import Product, OrderItem, Customer
 
 
 def index(request):
@@ -58,7 +58,7 @@ def objects__retrieve_filter(request):
 
     # region Referencing fields using F objects...
     # inventory is equal to collection id
-    refer_query = Product.objects.filter(inventory=F('collection__id')) # it will compare inventory with collection id
+    refer_query = Product.objects.filter(inventory=F('collection__id'))  # it will compare inventory with collection id
     # endregion
 
     # region Order by...
@@ -71,25 +71,25 @@ def objects__retrieve_filter(request):
     # order_by = Product.objects.latest('price')  # latest
     # endregion
 
-    # region limiting query set...
+    # region limiting query set
     limit_query = Product.objects.all()[:10]  # first 10
-    # limit_query = Product.objects.values('title', 'id') # selecting fields only
-    # limit_query = Product.objects.values('title', 'id', 'collection__title')[1]  # now it will use inner join
-    # note: if we use values, it will return dictionary, not object
+    limit_query = Product.objects.values('title', 'id')  # selecting fields only
+    limit_query = Product.objects.values('title', 'id', 'collection__title')[1]  # now it'll use inner join
+    # note: if we use values, it'll return dictionary, not object
 
-    # limit_query = Product.objects.values_list('title', 'id')[1] # This return tuple instead of dictionary
+    limit_query = Product.objects.values_list('title', 'id')[1]  # This return tuple instead of dictionary
 
     # select products that have been ordered
-    # limit_query = OrderItem.objects.values('product_id').distinct() # distinct is used to remove duplicate
+    limit_query = OrderItem.objects.values('product_id').distinct()  # distinct is used to remove duplicate
     # sort the list by id
-    # limit_query = Product.objects.filter(id__in=limit_query).order_by('id')
+    limit_query = Product.objects.filter(id__in=limit_query).order_by('id')
 
-    # only vs values: only is used to select fields, values is used to select fields and return dictionary
-    # limit_query = Product.objects.only('title', 'price')  # only select title and price
-    # be careful, if we use only, it will not return id, so we can't use it in filter, end up with many queries
+    # only versus values: only is used to select fields, values is used to select fields and return dictionary
+    limit_query = Product.objects.only('title', 'price')  # only select title and price
+    # be careful, if we use only, it won't return id, so we can't use it in filter, end up with many queries
 
-    # limit_query = Product.objects.defer('title', 'price')  # defer is opposite of only
-    # defer is used to exclude fields, so it will return id, but not title and price
+    limit_query = Product.objects.defer('title', 'price')  # defer is the opposite of only
+    # defer is used to exclude fields, so it'll return id, but not title and price
     # endregion
 
     # region select_related and prefetch_related...
@@ -111,8 +111,31 @@ def objects__retrieve_filter(request):
         'collection')  # if we use both, it will reduce multiple queries
     # endregion
 
-    # region Aggregation...
-    
+    # region Annotating objects
+    # annotate is used to add extra fields to the queryset
+    # lets add is_new field to the queryset
+    limit_query = Product.objects.annotate(is_new=Value(True))  # django will add is_new field to the queryset
+    # let's add new_id +1 with id field reference
+    limit_query = Product.objects.annotate(new_id=F('id') + 1)  # it'll add new_id field to the queryset
+
+    # calling database function using annotate and Func
+    limit_query = Customer.objects.annotate(
+        # Concatenate first_name and last_name with space in between
+        full_name=Func(F('first_name'), Value(' '), F('last_name'), function='CONCAT'))
+    # this doesn't work in sqlite, but work in postgresql
+
+    # alternatively, we can use Concat function
+    limit_query = Customer.objects.annotate(
+        full_name=Concat('first_name', Value(' '), 'last_name'))  # this will work in sqlite
+
+    # lest find the total number of orders for each customer
+    limit_query = Customer.objects.annotate(total_orders=Count('order'))  # it'll add total_orders field to the queryset
+
+    # expression wrapper is used to perform arithmetic operations
+    limit_query = Product.objects.annotate(
+        discounted_price=ExpressionWrapper(F('price') * 0.9, output_field=DecimalField()))
+
+    # endregion
 
     context = {
         'single_product': product,
@@ -120,6 +143,6 @@ def objects__retrieve_filter(request):
         'queryset': queryset,
         'refer_queryset': refer_query,
         'order_by': order_by,
-        'limit_query': limit_query
+        'limit_query': list(limit_query)
     }
     return render(request, 'objects.html', context)

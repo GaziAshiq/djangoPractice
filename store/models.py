@@ -30,7 +30,7 @@ class Product(models.Model):
     inventory = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
-    # if collection are deleted, I don't want to delete product... so i'm using PROTECT
+    # if a collection is deleted, I don't want to delete product... so i'm using PROTECT
     # many-to-one, Product belongs to one Collection, but a Collection can have multiple Products.
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
@@ -56,7 +56,7 @@ class Customer(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
-        # using indexes for speed up database query
+        # using indexes for a speed-up database query
         indexes = [
             models.Index(fields=['last_name', 'first_name'])
         ]
