@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'core.apps.CoreConfig',
     'store.apps.StoreConfig',
-    'tags.apps.TagsConfig'
+    'tags.apps.TagsConfig',
+    'likes.apps.LikesConfig'
 ]
 
 MIDDLEWARE = [
