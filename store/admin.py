@@ -1,9 +1,11 @@
 from django.contrib import admin, messages
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import format_html, urlencode
 
 from .models import Collection, Customer, Product, Promotion, Order, OrderItem
+from tags.models import TaggedItem
 
 
 # Register your models here.
@@ -42,13 +44,22 @@ class CollectionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(products_count=Count('product'))
 
 
+class TagInline(GenericTabularInline):
+    autocomplete_fields = ['tag']
+    model = TaggedItem
+    min_num = 1
+    max_num = 10
+    extra = 0
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ['collection']  # this will add a search bar to search collection
     prepopulated_fields = {
         'slug': ['title']
-    } # this will auto-populate slug field with title
+    }  # this will auto-populate slug field with title
     actions = ['clear_inventory']
+    inlines = [TagInline]
     list_display = ['title', 'price', 'inventory_status', 'collection']
     list_editable = ['price']
     list_per_page = 10
@@ -84,6 +95,7 @@ class OrderItemInline(admin.TabularInline):
     min_num = 1
     max_num = 10
     extra = 0
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
