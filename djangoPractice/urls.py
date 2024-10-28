@@ -1,11 +1,15 @@
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import path, include
 
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 from core import views as core_views
+
+admin.site.site_header = "Django Practice Admin"
+admin.site.site_title = "Admin Portal"
+admin.site.index_title = "Welcome to Django Practice"
 
 urlpatterns = [
     path("", core_views.index),
