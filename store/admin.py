@@ -54,6 +54,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_filter = ['collection', 'updated_at', InventoryFilter]  # filtering by collection and updated_at
     list_select_related = ['collection']  # this will reduce the number of queries for a foreign key
+    search_fields = ['title']  # searching by title
 
     @admin.display(ordering='inventory')  # sorting by inventory
     def inventory_status(self, product):
@@ -77,9 +78,17 @@ class CustomerAdmin(admin.ModelAdmin):
     search_fields = ['first_name__istartswith', 'last_name__istartswith']  # searching by first_name and last_name
 
 
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    autocomplete_fields = ['product']
+    min_num = 1
+    max_num = 10
+    extra = 0
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ['customer']
+    inlines = [OrderItemInline]
     list_display = ['id', 'customer', 'placed_at']
     list_per_page = 10
     list_select_related = ['customer']
