@@ -1,8 +1,21 @@
 from django.contrib import admin
+from django.db.models import Count
+
 from .models import Collection, Customer, Product, Promotion, Order, OrderItem
 
 
 # Register your models here.
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'products_count']
+
+    @admin.display(ordering='products_count')  # sorting by products_count
+    def products_count(self, collection):
+        return collection.products_count
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(products_count=Count('product'))
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'price', 'inventory_status', 'collection']
@@ -31,6 +44,3 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'customer', 'placed_at']
     list_per_page = 10
     list_select_related = ['customer']
-
-
-admin.site.register(Collection)
