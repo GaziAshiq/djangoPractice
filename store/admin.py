@@ -7,6 +7,23 @@ from .models import Collection, Customer, Product, Promotion, Order, OrderItem
 
 
 # Register your models here.
+class InventoryFilter(admin.SimpleListFilter):
+    title = 'inventory'
+    parameter_name = 'inventory'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('<10', 'Low'),
+            ('>=10', 'OK')
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == '<10':
+            return queryset.filter(inventory__lt=10)
+        if self.value() == '>=10':
+            return queryset.filter(inventory__gte=10)
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'products_count']
@@ -29,6 +46,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'price', 'inventory_status', 'collection']
     list_editable = ['price']
     list_per_page = 10
+    list_filter = ['collection', 'updated_at', InventoryFilter]  # filtering by collection and updated_at
     list_select_related = ['collection']  # this will reduce the number of queries for a foreign key
 
     @admin.display(ordering='inventory')  # sorting by inventory
@@ -45,7 +63,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_editable = ['membership']
     ordering = ['first_name', 'last_name']
     list_per_page = 10
-    search_fields = ['first_name__istartswith', 'last_name__istartswith'] # searching by first_name and last_name
+    search_fields = ['first_name__istartswith', 'last_name__istartswith']  # searching by first_name and last_name
 
 
 @admin.register(Order)
