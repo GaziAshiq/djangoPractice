@@ -26,6 +26,7 @@ class InventoryFilter(admin.SimpleListFilter):
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
+    search_fields = ['title']  # searching by title
     list_display = ['title', 'products_count']
 
     @admin.display(ordering='products_count')  # sorting by products_count
@@ -43,6 +44,10 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['collection']  # this will add a search bar to search collection
+    prepopulated_fields = {
+        'slug': ['title']
+    } # this will auto-populate slug field with title
     actions = ['clear_inventory']
     list_display = ['title', 'price', 'inventory_status', 'collection']
     list_editable = ['price']
@@ -74,6 +79,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['customer']
     list_display = ['id', 'customer', 'placed_at']
     list_per_page = 10
     list_select_related = ['customer']

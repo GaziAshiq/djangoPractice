@@ -22,7 +22,7 @@ class Collection(models.Model):
         'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
 
     def __str__(self):
-        return self.title # this will show title in admin panel
+        return self.title  # this will show title in admin panel
 
     class Meta:
         # ordering by title in ascending order
@@ -88,6 +88,7 @@ class Order(models.Model):
         (PAYMENT_STATUS_COMPLETE, 'Complete'),
         (PAYMENT_STATUS_FAILED, 'Failed'),
     ]
+
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
     # we should never delete order, because this represents sells
