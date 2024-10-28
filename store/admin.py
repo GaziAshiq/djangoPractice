@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
+from django.urls import reverse
+from django.utils.html import format_html, urlencode
 
 from .models import Collection, Customer, Product, Promotion, Order, OrderItem
 
@@ -11,10 +13,16 @@ class CollectionAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='products_count')  # sorting by products_count
     def products_count(self, collection):
-        return collection.products_count
+        url = (reverse('admin:store_product_changelist')
+               + '?'
+               + urlencode({'collection__id': str(collection.id)})
+               )  # this will return the url of products with collection id as query parameter in url
+        return format_html('<a href="{}">{}</a>', url,
+                           collection.products_count)  # this will return the hyperlink of products with collection id
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(products_count=Count('product'))
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
