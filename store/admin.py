@@ -45,6 +45,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_editable = ['membership']
     ordering = ['first_name', 'last_name']
     list_per_page = 10
+    search_fields = ['first_name__istartswith', 'last_name__istartswith'] # searching by first_name and last_name
 
 
 @admin.register(Order)
