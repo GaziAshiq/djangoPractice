@@ -21,6 +21,13 @@ class Collection(models.Model):
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
 
+    def __str__(self):
+        return self.title # this will show title in admin panel
+
+    class Meta:
+        # ordering by title in ascending order
+        ordering = ['title']
+
 
 class Product(models.Model):
     title = models.CharField(max_length=64)
@@ -34,6 +41,12 @@ class Product(models.Model):
     # many-to-one, Product belongs to one Collection, but a Collection can have multiple Products.
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     promotions = models.ManyToManyField(Promotion)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['title']
 
 
 class Customer(models.Model):
@@ -54,6 +67,9 @@ class Customer(models.Model):
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
     class Meta:
         # using indexes for a speed-up database query
