@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 """ 
 Guideline:
@@ -32,15 +33,15 @@ class Collection(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=64)
     slug = models.SlugField()
-    description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField(null=True, blank=True) # null for database, blank for form
+    price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1.0)])
     inventory = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     # if a collection is deleted, I don't want to delete product... so i'm using PROTECT
     # many-to-one, Product belongs to one Collection, but a Collection can have multiple Products.
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(Promotion)
+    promotions = models.ManyToManyField(Promotion, blank=True)
 
     def __str__(self):
         return self.title
