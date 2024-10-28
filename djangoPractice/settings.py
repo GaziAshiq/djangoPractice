@@ -36,10 +36,12 @@ INSTALLED_APPS = [
     # ---------------------- #
     'django_browser_reload',
     'debug_toolbar',
+    # ---------------------- #
     'core.apps.CoreConfig',
+    'generic_app_manager.apps.GenericAppManagerConfig',
+    'likes.apps.LikesConfig',
     'store.apps.StoreConfig',
     'tags.apps.TagsConfig',
-    'likes.apps.LikesConfig'
 ]
 
 MIDDLEWARE = [
