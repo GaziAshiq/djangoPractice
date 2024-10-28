@@ -1,8 +1,18 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction, connection
 from django.db.models import Q, F, Value, Func, Count, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
-from store.models import Product, OrderItem, Customer
+from django.http import HttpResponse
+from django.shortcuts import render
+
+from store.models import Product, OrderItem, Customer, Collection, Order
+from tags.models import Tag, TaggedItem
+
+"""
+here, I have import models from different apps, so I can play with them
+this view work as a playground for me to test different query set
+My notes are in the comments
+"""
 
 
 def index(request):
@@ -22,7 +32,7 @@ def about(request):
     return HttpResponse("About Django")
 
 
-# in this function, I will try all the query set
+# in this function, I will try all the query set, (model from Store app)
 def objects__retrieve_filter(request):
     # region Get all products...
     products = Product.objects.all()
@@ -111,7 +121,7 @@ def objects__retrieve_filter(request):
         'collection')  # if we use both, it will reduce multiple queries
     # endregion
 
-    # region Annotating objects
+    # region Annotating objects, concat function, expression wrapper
     # annotate is used to add extra fields to the queryset
     # lets add is_new field to the queryset
     limit_query = Product.objects.annotate(is_new=Value(True))  # django will add is_new field to the queryset
@@ -146,3 +156,112 @@ def objects__retrieve_filter(request):
         'limit_query': list(limit_query)
     }
     return render(request, 'objects.html', context)
+
+
+# region querying generic relationships (model from Tags app)
+"""
+def tags_items(request):
+    content_type = ContentType.objects.get_for_model(model=Product)
+    tagged_items_queryset = TaggedItem.objects.select_related('tag').filter(content_type=content_type, object_id=1)
+    return render(request, 'index.html', {"tags": tagged_items_queryset})
+"""
+
+
+# to simplify the code, I have created a custom manager for TaggedItem model
+# so, I can use it to filter tags by passing app_name and id
+def tags_items(request):
+    tagged_items_queryset = TaggedItem.objects.get_tags_for(Product, 1)
+    return render(request, 'index.html', {"tags": tagged_items_queryset})
+
+
+# endregion
+
+
+# creating an object
+def create_collection(request):
+    # best practice to create an object
+    collection = Collection()
+    collection.title = "New Games Collection"
+    collection.featured_product = Product.objects.first()
+    collection.save()
+
+    # short way to create object
+    # collection = Collection.objects.create(title="New Games Collection", featured_product=Product.objects.first())
+    return render(request, 'index.html', {"collection": collection})
+
+
+# updating an object
+def update_collection(request):
+    # region: get object first, then update. so, no data loss
+    collection = Collection.objects.get(pk=15)
+    collection.title = "Updated Games Collection"
+    collection.featured_product = Product(pk=1)
+    collection.save()
+    # endregion
+
+    # region: short way to update object, but it may cause data loss
+    # Collection.objects.filter(pk=15).update(title="Updated Games Collection", featured_product=Product(pk=1))
+    # endregion
+    return render(request, 'index.html', {"collection": collection})
+
+
+# deleting an object
+def delete_collection(request):
+    # region: delete single object
+    collection = Collection.objects.get(pk=15)
+    collection.delete()
+    # endregion
+
+    # region: delete multiple objects
+    Collection.objects.filter(id__gt=5).delete()
+    # endregion
+    return render(request, 'index.html', {"collection": collection})
+
+
+# Transactions in Django
+# somtimes we need to perform multiple queries in a single transaction
+# if one query fails, we need to rollback all the queries
+
+# the typical example is saving an order and order items
+def save_order(request):
+    # ... assume some code here
+
+    with transaction.atomic():
+        # region: create an order
+        order = Order()
+        order.customer_id = 1
+        order.save()
+        # endregion
+
+        # region: create order items
+        item = OrderItem()
+        item.order = order
+        item.product_id = 1
+        item.quantity = 2
+        item.unit_price = 5
+        item.save()
+        # endregion
+
+    # imagine, while saving order items, it fails. so, we need to rollback the order as well as order items
+    # to do this, we can use transaction.atomic
+
+    return render(request, 'index.html', {"name": "ashiq"})
+
+
+# Django RAW SQL queries
+# sometimes we need to write raw sql queries, because django ORM can't handle complex queries
+
+def raw_sql_query(request):
+    queryset = Product.objects.raw('SELECT * FROM store_product')  # it'll return raw query set
+
+    # instead of using raw method, we can use cursor
+    # cursor = connection.cursor()
+    # cursor.execute('SELECT * FROM store_product') # here we can pass any sql query, no limitation
+    # cursor.close() # after using cursor, we should close it to avoid memory leak
+
+    # best way to use cursor is using context manager\
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM store_product')
+        for row in cursor.fetchall():
+            print(row)
+    return render(request, 'index.html', {"products": list(queryset)})
